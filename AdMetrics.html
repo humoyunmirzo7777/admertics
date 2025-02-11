@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reklama Kalkulyatori</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            margin: 50px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: auto;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .admin-panel {
+            margin-top: 20px;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Reklama Kalkulyatori</h1>
+
+        <label for="uzunlik">Uzunlik (metr):</label>
+        <input type="number" id="uzunlik" placeholder="Masalan, 3">
+
+        <label for="eni">Eni (metr):</label>
+        <input type="number" id="eni" placeholder="Masalan, 2">
+
+        <label for="material">Materialni tanlang:</label>
+        <select id="material"></select>
+
+        <button onclick="hisobla()">Narxni Hisoblash</button>
+
+        <h2>Umumiy Narx: <span id="natija">0</span> so‘m</h2>
+    </div>
+
+    <div class="container admin-panel">
+        <h3>🔧 Admin Panel – Materiallarni boshqarish</h3>
+        <input type="text" id="yangiMaterial" placeholder="Material nomi">
+        <input type="number" id="yangiNarx" placeholder="Narxi (so‘m)">
+        <button onclick="materialQosh()">Qo‘shish</button>
+        <button onclick="materialOchirish()">Tanlangan materialni o‘chirish</button>
+    </div>
+
+    <script>
+        // LocalStorage orqali materiallarni saqlash va yuklash
+        function loadMaterials() {
+            let savedMaterials = localStorage.getItem("materials");
+            return savedMaterials ? JSON.parse(savedMaterials) : {
+                "Banner": 20000,
+                "Plyonka": 25000,
+                "LED Ekran": 50000
+            };
+        }
+
+        function saveMaterials(materials) {
+            localStorage.setItem("materials", JSON.stringify(materials));
+        }
+
+        let materiallar = loadMaterials();
+
+        function yangilash() {
+            let materialSelect = document.getElementById("material");
+            materialSelect.innerHTML = "";
+            for (let mat in materiallar) {
+                let option = document.createElement("option");
+                option.value = mat;
+                option.textContent = mat + " - " + materiallar[mat].toLocaleString() + " so‘m";
+                materialSelect.appendChild(option);
+            }
+        }
+
+        function hisobla() {
+            let uzunlik = document.getElementById("uzunlik").value;
+            let eni = document.getElementById("eni").value;
+            let tanlanganMaterial = document.getElementById("material").value;
+            let narx = materiallar[tanlanganMaterial];
+
+            if (uzunlik > 0 && eni > 0) {
+                let umumiyNarx = uzunlik * eni * narx;
+                document.getElementById("natija").innerText = umumiyNarx.toLocaleString();
+            } else {
+                alert("Iltimos, to‘g‘ri qiymat kiriting!");
+            }
+        }
+
+        function materialQosh() {
+            let nom = document.getElementById("yangiMaterial").value.trim();
+            let narx = document.getElementById("yangiNarx").value.trim();
+
+            if (nom === ""  ||narx === "" || isNaN(narx) || narx <= 0) {
+                alert("Iltimos, to‘g‘ri ma’lumot kiriting!");
+                return;
+            }
+
+            materiallar[nom] = parseInt(narx);
+            saveMaterials(materiallar); // LocalStorage-ga saqlash
+            yangilash();
+            document.getElementById("yangiMaterial").value = "";
+            document.getElementById("yangiNarx").value = "";
+        }
+
+        function materialOchirish() {
+            let materialSelect = document.getElementById("material");
+            let tanlanganMaterial = materialSelect.value;
+
+            if (tanlanganMaterial in materiallar) {
+                delete materiallar[tanlanganMaterial];
+                saveMaterials(materiallar); // O‘chirilganidan keyin saqlash
+                yangilash();
+            }
+        }
+
+        yangilash(); // Dastlabki yuklash
+    </script>
+</body>
+</html>
